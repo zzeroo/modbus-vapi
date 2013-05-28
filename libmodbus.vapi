@@ -91,7 +91,7 @@ namespace Modbus {
 	[CCode (cheader_filename = "modbus.h")]
 	public const int ENOBASE;
 
-	[CCode (cname = "struct modbus_mapping_t", cheader_filename = "modbus.h", free_function = "modbus_mapping_free")]
+	[CCode (cname = "modbus_mapping_t", cheader_filename = "modbus.h", unref_function = "", free_function = "modbus_mapping_free")]
 	public class Mapping {
 		public int nb_bits;
 		public int nb_input_bits;
@@ -114,7 +114,7 @@ namespace Modbus {
         public Mapping (int nb_coil_status, int nb_input_status, int nb_holding_registers, int nb_input_registers);
 	}
 
-	[CCode (cname = "struct modbus_t", cprefix = "modbus_", cheader_filename = "modbus.h", free_function = "modbus_close")]
+	[CCode (cname = "modbus_t", cprefix = "modbus_", cheader_filename = "modbus.h", unref_function = "", free_function = "modbus_free")]
 	public class Context {
         [CCode (cname = "modbus_new_rtu")]
         public Context.as_rtu (string device, int baud, GLib.ObjectPath parity, int data_bit, int stop_bit);
@@ -125,9 +125,9 @@ namespace Modbus {
         [CCode (cname = "modbus_new_tcp_pi")]
         public Context.as_tcp_pi (string node, string service);
 
+        public void close ();
         public int connect ();
         public int flush ();
-        public void free ();
         public void get_byte_timeout (void* timeout);
         public int get_header_length ();
         public void get_response_timeout (void* timeout);
@@ -136,15 +136,15 @@ namespace Modbus {
         public int read_input_bits (int addr, [CCode (array_length_pos = 1.5)] uchar[] dest);
         public int read_input_registers (int addr, [CCode (array_length_pos = 1.5)] uint16[] dest);
         public int read_registers (int addr, [CCode (array_length_pos = 1.5)] uint16[] dest);
-        public int receive (uchar[] req);
-        public int receive_confirmation (uchar[] rsp);
-        public int receive_from (int sockfd, uchar[] req);
-        public int reply (uchar req, int req_length, Mapping mb_mapping);
-        public int reply_exception (uchar[] req, uint exception_code);
-        public int report_slave_id (uchar[] dest);
+        public int receive ([CCode (array_length = false)] uchar[] req);
+        public int receive_confirmation ([CCode (array_length = false)] uchar[] rsp);
+        public int receive_from (int sockfd, [CCode (array_length = false)] uchar[] req);
+        public int reply ([CCode (array_length_pos = 1.5)] uchar req, Mapping mb_mapping);
+        public int reply_exception ([CCode (array_length = false)] uchar[] req, uint exception_code);
+        public int report_slave_id ([CCode (array_length = false)] uchar[] dest);
         public int rtu_get_serial_mode ();
         public int rtu_set_serial_mode (int mode);
-        public int send_raw_request (uchar raw_req, int raw_req_length);
+        public int send_raw_request ([CCode (array_length_pos = 1.5)] uchar[] raw_req);
         public void set_byte_timeout (void* timeout);
         public void set_debug (int boolean);
         public int set_error_recovery (ErrorRecovery error_recovery);
@@ -163,9 +163,9 @@ namespace Modbus {
 	}
 
 	public static uchar get_byte_from_bits ([CCode (array_length_pos = 2.5)] uchar[] src, int index);
-	public static float get_float (uint16[] src);
-	public static void set_bits_from_byte (uchar[] dest, int index, uchar value);
-	public static void set_bits_from_bytes (uchar[] dest, int index, [CCode (array_length_pos = 2.5)] uchar[] tab_byte);
-	public static void set_float (float f, uint16i[] dest);
+	public static float get_float ([CCode (array_length = false)] uint16[] src);
+	public static void set_bits_from_byte ([CCode (array_length = false)] uchar[] dest, int index, uchar value);
+	public static void set_bits_from_bytes ([CCode (array_length = false)] uchar[] dest, int index, [CCode (array_length_pos = 2.5)] uchar[] tab_byte);
+	public static void set_float (float f,[CCode (array_length = false)]  uint16[] dest);
 	public static unowned string strerror (int errnum);
 }
