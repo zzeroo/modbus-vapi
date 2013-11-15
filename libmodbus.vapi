@@ -117,13 +117,13 @@ namespace Modbus {
 	[CCode (cname = "modbus_t", cprefix = "modbus_", cheader_filename = "modbus.h", unref_function = "", free_function = "modbus_free")]
 	public class Context {
         [CCode (cname = "modbus_new_rtu")]
-        public Context.as_rtu (string device, int baud, GLib.ObjectPath parity, int data_bit, int stop_bit);
+        public Context.rtu (string device, int baud, char parity, int data_bit, int stop_bit);
 
         [CCode (cname = "modbus_new_tcp")]
-        public Context.as_tcp (string ip_address, int port);
+        public Context.tcp (string ip_address, int port);
 
         [CCode (cname = "modbus_new_tcp_pi")]
-        public Context.as_tcp_pi (string node, string service);
+        public Context.tcp_pi (string node, string service);
 
         public void close ();
         public int connect ();
