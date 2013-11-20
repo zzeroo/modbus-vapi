@@ -7,7 +7,7 @@ class ReadRegisters : GLib.Object {
     public void run () {
         uint16 reg[2];
 
-        ctx = new Context.as_tcp ("10.0.1.77", TcpAttributes.DEFAULT_PORT);
+        ctx = new Context.tcp ("10.0.1.77", TcpAttributes.DEFAULT_PORT);
 
         if (ctx.connect () == -1)
             error ("Connection failed.");
