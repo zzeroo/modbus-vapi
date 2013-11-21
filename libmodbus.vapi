@@ -128,9 +128,9 @@ namespace Modbus {
         public void close ();
         public int connect ();
         public int flush ();
-        public void get_byte_timeout (void* timeout);
+        public void get_byte_timeout (Posix.timeval *timeout);
         public int get_header_length ();
-        public void get_response_timeout (void* timeout);
+        public void get_response_timeout (Posix.timeval *timeout);
         public int get_socket ();
         public int read_bits (int addr, [CCode (array_length_pos = 1.5)] uchar[] dest);
         public int read_input_bits (int addr, [CCode (array_length_pos = 1.5)] uchar[] dest);
@@ -145,10 +145,10 @@ namespace Modbus {
         public int rtu_get_serial_mode ();
         public int rtu_set_serial_mode (int mode);
         public int send_raw_request ([CCode (array_length_pos = 1.5)] uchar[] raw_req);
-        public void set_byte_timeout (void* timeout);
+        public void set_byte_timeout (Posix.timeval *timeout);
         public void set_debug (int boolean);
         public int set_error_recovery (ErrorRecovery error_recovery);
-        public void set_response_timeout (void* timeout);
+        public void set_response_timeout (Posix.timeval *timeout);
         public int set_slave (int slave);
         public void set_socket (int socket);
         public int tcp_accept (int socket);
