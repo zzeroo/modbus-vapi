@@ -183,7 +183,7 @@ namespace Modbus {
         public int send_raw_request ([CCode (array_length_pos = 1.5)] uint8[] raw_req_length);
         public int receive ([CCode (array_length = false)] uint8[] req);
         public int receive_confirmation ([CCode (array_length = false)] uint8[] rsp);
-        public int reply ([CCode (array_length_pos = 1.5)] uint8 req, Mapping mb_mapping);
+        public int reply ([CCode (array_length_pos = 1.5)] uint8[] req, Mapping mb_mapping);
         public int reply_exception ([CCode (array_length = false)] uint8[] req, uint exception_code);
 
         public int tcp_listen(int nb_connection);
@@ -221,20 +221,23 @@ namespace Modbus {
 
 
 
-    [CCode (cheader_filename = "modbus-tcp.h", cprefix = "MODBUS_")]
-    public const int TCP_DEFAULT_PORT;
-    public const int TCP_SLAVE;
+  [CCode (cname = "int", cprefix = "MODBUS_TCP_", cheader_filename = "modbus-tcp.h")]
+  public enum TcpAttributes {
+    DEFAULT_PORT,
+    SLAVE,
+    MAX_ADU_LENGTH
+  }
 
-    public const int TCP_MAX_ADU_LENGTH;
 
-
-    [CCode (cheader_filename = "modbus-rtu.h", cprefix = "MODBUS_")]
-    public const int RTU_MAX_ADU_LENGTH;
-    public const int RTU_RS232;
-    public const int RTU_RS485;
-    public const int RTU_RTS_NONE;
-    public const int RTU_RTS_UP;
-    public const int RTU_RTS_DOWN;
+  [CCode (cname = "int", cprefix = "MODBUS_RTU_", cheader_filename = "modbus-rtu.h")]
+  public enum RtuAttributes {
+    MAX_ADU_LENGTH,
+    RS232,
+    RS485,
+    RTS_NONE,
+    RTS_UP,
+    RTS_DOWN
+  }
 
 }
 

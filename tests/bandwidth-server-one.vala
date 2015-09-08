@@ -9,7 +9,8 @@ class BandwidthServerOne : GLib.Object {
   public BandwidthServerOne () {
     ctx = new Context.tcp ("127.0.0.1", 1502);
     socket = ctx.tcp_listen (1);
-    ctx.tcp_accept (socket);
+    ctx.tcp_accept (ref socket);
+    message ("Create new Modbus.Mapping with MAX_READ_BITS: %d", Max.READ_BITS);
   }
 
   ~BandwidthServerOne () {
