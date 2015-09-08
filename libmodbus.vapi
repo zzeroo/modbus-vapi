@@ -121,9 +121,9 @@ namespace Modbus {
         public int nb_registers;
         public int offset_registers;
         [CCode (array_length_cname = "nb_bits", array_length_type = "int")]
-        public uchar tab_bits;
+        public uint8 tab_bits;
         [CCode (array_length_cname = "nb_input_bits", array_length_type = "int")]
-        public uchar tab_input_bits;
+        public uint8 tab_input_bits;
         [CCode (array_length_cname = "nb_input_registers", array_length_type = "int")]
         public uint16 tab_input_registers;
         [CCode (array_length_cname = "nb_registers", array_length_type = "int")]
@@ -169,28 +169,28 @@ namespace Modbus {
         public int set_byte_timeout (Posix.timeval *timeout);
         public int get_header_length ();
         public int set_debug (int flag);
-        public int read_bits (int addr, [CCode (array_length_pos = 1.5)] uchar[] dest);
-        public int read_input_bits (int addr, [CCode (array_length_pos = 1.5)] uchar[] dest);
+        public int read_bits (int addr, [CCode (array_length_pos = 1.5)] uint8[] dest);
+        public int read_input_bits (int addr, [CCode (array_length_pos = 1.5)] uint8[] dest);
         public int read_registers (int addr, [CCode (array_length_pos = 1.5)] uint16[] dest);
         public int read_input_registers (int addr, [CCode (array_length_pos = 1.5)] uint16[] dest);
         public int write_bit (int coil_addr, int status);
         public int write_register (int reg_addr, int value);
-        public int write_bits (int addr, [CCode (array_length_pos = 1.5)] uchar[] data);
+        public int write_bits (int addr, [CCode (array_length_pos = 1.5)] uint8[] data);
         public int write_registers (int addr, [CCode (array_length_pos = 1.5)] uint16[] data);
         public int mask_write_register (int addr, uint16 and_mask, uint16 or_mask);
         public int write_and_read_registers (int write_addr, [CCode (array_length_pos = 1.5)] uint16[] src, int read_addr, [CCode (array_length_pos = 2.5)] uint16[] dest);
-        public int report_slave_id ([CCode (array_length = false)] uchar[] dest);
-        public int send_raw_request ([CCode (array_length_pos = 1.5)] uchar[] raw_req_length);
-        public int receive ([CCode (array_length = false)] uchar[] req);
-        public int receive_confirmation ([CCode (array_length = false)] uchar[] rsp);
-        public int reply ([CCode (array_length_pos = 1.5)] uchar req, Mapping mb_mapping);
-        public int reply_exception ([CCode (array_length = false)] uchar[] req, uint exception_code);
+        public int report_slave_id ([CCode (array_length = false)] uint8[] dest);
+        public int send_raw_request ([CCode (array_length_pos = 1.5)] uint8[] raw_req_length);
+        public int receive ([CCode (array_length = false)] uint8[] req);
+        public int receive_confirmation ([CCode (array_length = false)] uint8[] rsp);
+        public int reply ([CCode (array_length_pos = 1.5)] uint8 req, Mapping mb_mapping);
+        public int reply_exception ([CCode (array_length = false)] uint8[] req, uint exception_code);
 
         public int tcp_listen(int nb_connection);
-        public int tcp_accept(int socket);
+        public int tcp_accept(ref int socket);
 
         public int tcp_pi_listen(int nb_connection);
-        public int tcp_pi_accept(int socket);
+        public int tcp_pi_accept(ref int socket);
 
 
         public int rtu_set_serial_mode (int mode);
@@ -208,10 +208,10 @@ namespace Modbus {
 
     }
 
-    public static void set_bits_from_byte ([CCode (array_length = false)] uchar[] dest, int idx, uchar value);
-	public static void set_bits_from_bytes ([CCode (array_length = false)] uchar[] dest, int idx, [CCode (array_length_pos = 2.5)] uchar[] tab_byte);
+    public static void set_bits_from_byte ([CCode (array_length = false)] uint8[] dest, int idx, uint8 value);
+	public static void set_bits_from_bytes ([CCode (array_length = false)] uint8[] dest, int idx, [CCode (array_length_pos = 2.5)] uint8[] tab_byte);
 
-	public static uchar get_byte_from_bits ([CCode (array_length_pos = 2.5)] uchar[] src, int idx);
+	public static uint8 get_byte_from_bits ([CCode (array_length_pos = 2.5)] uint8[] src, int idx);
 	public static float get_float ([CCode (array_length = false)] uint16[] src);
     public static float get_float_dcba ([CCode (array_length = false)] uint16[] src);
 	public static void set_float (float f,[CCode (array_length = false)]  uint16[] dest);
