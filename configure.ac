@@ -1,6 +1,9 @@
-# This file is processed by autoconf to create a configure script
-AC_INIT(modbus-vapi], 0.1.1, [co@zzeroo.com])
-AM_INIT_AUTOMAKE([1.10 no-define foreign dist-xz no-dist-gzip])
+AC_PREREQ([2.63])
+AC_INIT([modbus-vapi],
+        0.1.0,
+        [co@zzeroo.com],
+        [modbus-vapi],
+        [https://github.com/zzeroo/modbus-vapi])
 
 AC_PROG_CC
 AM_PROG_VALAC([0.28])
@@ -16,7 +19,3 @@ PKG_CHECK_MODULES(MODBUS_VAPI, [
 ])
 
 
-AC_CONFIG_FILES([Makefile
-                 tests/Makefile])
-
-AC_OUTPUT
