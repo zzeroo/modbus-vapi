@@ -2,29 +2,36 @@ using Modbus;
 
 class ReadRegisters : GLib.Object {
 
-    private Context ctx;
+  private Context ctx;
 
-    public void run () {
-        uint16 reg[2];
+  public ReadRegisters () {
+    ctx = new Context.tcp ("127.0.0.1", 1502);
+    ctx.set_debug (1);
+  }
 
-        ctx = new Context.tcp ("10.0.1.77", TcpAttributes.DEFAULT_PORT);
+  ~ReadRegisters () {
+    ctx.close ();
+  }
 
-        if (ctx.connect () == -1)
-            error ("Connection failed.");
+  public void run () {
+    uint16 reg[2];
 
-        if (ctx.read_registers (0x46, reg) == -1)
-            error ("Modbus read error.");
+    if (ctx.connect () == -1)
+      error ("Connection failed.");
 
-        message ("reg = %d (0x%X)", reg[0], reg[0]);
-        message ("reg = %d (0x%X)", reg[1], reg[1]);
-        message ("reg = %f", Modbus.get_float (reg));
+    if (ctx.read_registers (16, reg) == -1)
+      error ("Modbus read error.");
 
-        ctx.close ();
-    }
+    message ("reg = %d (0x%X)", reg[0], reg[0]);
+    message ("reg = %d (0x%X)", reg[1], reg[1]);
+    message ("reg = %f", Modbus.get_float (reg));
+  }
 }
 
-public static int main (string[] args) {
-    ReadRegisters app = new ReadRegisters ();
-    app.run ();
-    return 0;
+int main (string[] args) {
+  var app = new ReadRegisters ();
+  app.run ();
+
+  return 0;
 }
+

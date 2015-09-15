@@ -69,40 +69,26 @@ namespace Modbus {
     MAX
   }
 
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBXILFUN;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBXILADD;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBXILVAL;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBXSFAIL;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBXACK;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBXSBUSY;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBXNACK;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBXMEMPAR;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBXGPATH;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBXGTAR;
+  [CCode (cprefix = "EMB", cheader_filename = "modbus.h", has_type_id = false)]
+  public enum ModbusError {
+    XILFUN,
+    XILADD,
+    XILVAL,
+    XSFAIL,
+    XACK,
+    XSBUSY,
+    XNACK,
+    XMEMPAR,
+    XGPATH,
+    XGTAR,
 
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBBADCRC;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBBADDATA;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBBADEXC;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBUNKEXC;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBMDATA;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int EMBBADSLAVE;
-
+    BADCRC,
+    BADDATA,
+    BADEXC,
+    UNKEXC,
+    MDATA,
+    BADSLAVE
+  }
   [CCode (cheader_filename = "modbus.h")]
   public extern const int libmodbus_version_major;
   [CCode (cheader_filename = "modbus.h")]
@@ -111,8 +97,7 @@ namespace Modbus {
   public extern const int libmodbus_version_micro;
 
   [CCode (cname = "modbus_mapping_t", cheader_filename = "modbus.h",
-          unref_function = "", destroy_function = "", free_function = "modbus_mapping_free")]
-  [Compact]
+          unref_function = "", free_function = "modbus_mapping_free")]
   public class Mapping {
     public int nb_bits;
     public int offset_bits;
@@ -122,14 +107,14 @@ namespace Modbus {
     public int offset_input_registers;
     public int nb_registers;
     public int offset_registers;
-    [CCode (array_length_cname = "nb_bits", array_length_type = "int")]
-    public uint8 tab_bits;
-    [CCode (array_length_cname = "nb_input_bits", array_length_type = "int")]
-    public uint8 tab_input_bits;
-    [CCode (array_length_cname = "nb_input_registers", array_length_type = "int")]
-    public uint16 tab_input_registers;
-    [CCode (array_length_cname = "nb_registers", array_length_type = "int")]
-    public uint16 tab_registers;
+    [CCode (array_length_cname = "nb_bits")]
+    public uint8[] tab_bits;
+    [CCode (array_length_cname = "nb_input_bits")]
+    public uint8[] tab_input_bits;
+    [CCode (array_length_cname = "nb_input_registers")]
+    public uint16[] tab_input_registers;
+    [CCode (array_length_cname = "nb_registers")]
+    public uint16[] tab_registers;
 
     [CCode (cname = "modbus_mapping_new")]
     public Mapping (int nb_bits, int nb_input_bits, int nb_registers, int nb_input_registers);
@@ -143,6 +128,7 @@ namespace Modbus {
   }
 
   [CCode (cname = "modbus_t", cprefix = "modbus_", cheader_filename = "modbus.h", unref_function = "", free_function = "modbus_free")]
+  [Compact]
   public class Context {
     [CCode (cname = "modbus_new_rtu")]
     public Context.rtu (string device, int baud, char parity, int data_bit, int stop_bit);
@@ -179,11 +165,12 @@ namespace Modbus {
     public int mask_write_register (int addr, uint16 and_mask, uint16 or_mask);
     public int write_and_read_registers (int write_addr, [CCode (array_length_pos = 1.5)] uint16[] src, int read_addr, [CCode (array_length_pos = 2.5)] uint16[] dest);
     public int report_slave_id ([CCode (array_length = false)] uint8[] dest);
-    public int send_raw_request ([CCode (array_length_pos = 1.5)] uint8[] raw_req_length);
-    public int receive ([CCode (array_length = false)] uint8[] req);
-    public int receive_confirmation ([CCode (array_length = false)] uint8[] rsp);
-    public int reply ([CCode (array_length_pos = 1.5)] uint8[] req, Mapping mb_mapping);
-    public int reply_exception ([CCode (array_length = false)] uint8[] req, uint exception_code);
+    public int send_raw_request ([CCode (array_length_pos = 1.5)] uint8[] raw_request);
+    // FIXME: test ref parameter to avoid the *
+    public int receive ([CCode (array_length = false)] uint8[] request);
+    public int receive_confirmation ([CCode (array_length = false)] uint8 *rsp);
+    public int reply ([CCode (array_length_pos = 1.5)] uint8 *req, int index, Mapping mb_mapping);
+    public int reply_exception ([CCode (array_length = false)] uint8 *req, uint exception_code);
 
     public int tcp_listen(int nb_connection);
     public int tcp_accept(ref int socket);
@@ -207,10 +194,41 @@ namespace Modbus {
 
   }
 
-  public static void set_bits_from_byte ([CCode (array_length = false)]  ref
-                                         uint8* dest, int idx, uint8 value);
-  public static void set_bits_from_bytes ([CCode (array_length = false)] ref
-                                          uint8* dest, int idx, [CCode (array_length_pos = 2.5)] uint8[] tab_byte);
+  /**
+   * UTILS FUNCTIONS
+   **/
+  namespace Get {
+    [CCode (cname = "MODBUS_GET_HIGH_BYTE")]
+    //HIGH_BYTE(data) (((data) >> 8) & 0xFF)
+    public char high_byte (int8 *data);
+    [CCode (cname = "MODBUS_GET_LOW_BYTE")]
+    //LOW_BYTE(data) ((data) & 0xFF)
+    public char low_byte (int8 *data);
+    [CCode (cname = "MODBUS_GET_INT64_FROM_INT16")]
+    //INT64_FROM_INT16(tab_int16, index)
+    public int64 int64_from_int16 (int16 *tab, int index);
+    [CCode (cname = "MODBUS_GET_INT32_FROM_INT16")]
+    //INT32_FROM_INT16(tab_int16, index) ((tab_int16[(index)] << 16) + tab_int16[(index) + 1])
+    public int32 int32_from_int16 (int16 *tab, int index);
+    [CCode (cname = "MODBUS_GET_INT16_FROM_INT8")]
+    //INT16_FROM_INT8(tab_int8, index) ((tab_int8[(index)] << 8) + tab_int8[(index) + 1])
+    public static int16 int16_from_int8 (uint8 *tab, int index);
+  }
+
+  namespace Set {
+    [CCode (cname = "MODBUS_SET_INT16_TO_INT8")]
+    //INT16_TO_INT8(tab_int8, index, value)
+    public int8 int16_to_int8 (int16 *tab, int value, int number_of_bits);
+    [CCode (cname = "MODBUS_SET_INT32_TO_INT16")]
+    //INT32_TO_INT16(tab_int16, index, value)
+    public int16[] int32_to_int16 (int32[] tab);
+    [CCode (cname = "MODBUS_SET_INT64_TO_INT16")]
+    //INT64_TO_INT16(tab_int16, index, value)
+    public int16 int64_to_int16 (int64[] tab);
+  }
+
+  public static void set_bits_from_byte ([CCode (array_length = false)]  uint8 dest[], int idx, uint8 value);
+  public static void set_bits_from_bytes ([CCode (array_length = false)] uint8 dest[], int idx, int nb_bits, [CCode (array_length = false)] uint8[] tab_byte);
 
   public static uint8 get_byte_from_bits ([CCode (array_length_pos = 2.5)] uint8[] src, int idx);
   public static float get_float ([CCode (array_length = false)] uint16[] src);
@@ -219,7 +237,6 @@ namespace Modbus {
   public static void set_float_dcba (float f,[CCode (array_length = false)]  uint16[] dest);
 
   public static unowned string strerror (int errnum);
-
 
 
   [CCode (cprefix = "MODBUS_RTU_", cheader_filename = "modbus-rtu.h")]
@@ -240,4 +257,3 @@ namespace Modbus {
   }
 
 }
-

@@ -8,6 +8,7 @@ class RandomTestServer : GLib.Object {
 
   public RandomTestServer () {
     ctx = new Context.tcp ("127.0.0.1", 1502);
+    ctx.set_debug (1);
     modbus_mapping = new Mapping (500, 500, 500, 500);
     socket = ctx.tcp_listen (1);
     ctx.tcp_accept (ref socket);
@@ -19,7 +20,10 @@ class RandomTestServer : GLib.Object {
 
   public void run () {
     for (;;) {
-        uint8 query[TcpAttributes.MAX_ADU_LENGTH];
+        // FIXME: vala Bug look here:
+        // http://blog.gmane.org/gmane.comp.programming.vala/month=20150501
+        //uint8 query[TcpAttributes.MAX_ADU_LENGTH];
+        uint8 query[260];
         int rc;
 
         rc = ctx.receive(query);
