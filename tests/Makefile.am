@@ -9,7 +9,7 @@ unit_test_server_LDADD = \
 													$(LIBMODBUS_LIBS)
 
 bin_PROGRAMS = \
-							 unit_test_server
+							 unit-test-server
 
 unit_test_server_SOURCES = \
 													 unit-test-server.vala
