@@ -1,15 +1,15 @@
-#EXTRA_DIST =
+VALAFLAGS =\
+					 --vapidir ../ \
+					 $(VALA_PACKAGES)
 
-noinst_PROGRAMS = \
-	unit-test-server \
-	version
+unit_test_server_CPPFLAGS = \
+													$(LIBMODBUS_CFLAGS)
 
+unit_test_server_LDADD = \
+													$(LIBMODBUS_LIBS)
 
-unit_test_server_SOURCES = unit-test-server.vala
+bin_PROGRAMS = \
+							 unit_test_server
 
-version_SOURCES = version.vala
-
-CLEANFILES = *~ *.log
-
-noinst_SCRIPTS=unit-tests.sh
-TESTS=./unit-tests.sh
+unit_test_server_SOURCES = \
+													 unit-test-server.vala
