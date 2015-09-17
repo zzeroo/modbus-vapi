@@ -36,6 +36,9 @@ class UnitTestServer : GLib.Object {
   private const uint64 UT_IREAL = 0x4465229a;
   private const uint64 UT_IREAL_DCBA = 0x9a226544;
 
+  private const uint8 SERVER_ID = 17;
+  private const uint8 INVALID_SERVER_ID = 18;
+
 /* For MinGW */
 //#ifndef MSG_NOSIGNAL
   private const int MSG_NOSIGNAL = 0;
@@ -47,7 +50,7 @@ class UnitTestServer : GLib.Object {
   private int return_code;
   private int i; // for loop counter
   private int use_backend;
-  private uint8[] query;
+  private uint8 *query;
   private int header_length;
 
   enum Mode {
@@ -57,18 +60,9 @@ class UnitTestServer : GLib.Object {
   }
 
   public UnitTestServer () {
-    ctx = new Context.tcp ("127.0.0.1", 1502);
-    query = new uint8[TcpAttributes.MAX_ADU_LENGTH];
-    ctx.set_debug (1);
-    header_length = ctx.get_header_length ();
-    message ("header_length: %d", header_length);
   }
 
   public UnitTestServer.rtu () {
-    ctx = new Context.rtu ("/dev/ttyUSB0", 115200, 'N', 8, 1);
-    ctx.set_slave (0x10);
-    query = new uint8[RtuAttributes.MAX_ADU_LENGTH];
-    ctx.set_debug (1);
   }
 
   ~UnitTestServer () {
@@ -87,6 +81,7 @@ class UnitTestServer : GLib.Object {
         use_backend = Mode.RTU;
         break;
       default:
+        /* By default */
         use_backend = Mode.TCP;
         break;
     }
@@ -94,6 +89,21 @@ class UnitTestServer : GLib.Object {
       stdout.printf ("Usage:\n  %s [tcp|tcppi|rtu] - Modbus server for unit testing\n\n", argv[0]);
       return -1;
     }
+
+    if (use_backend == Mode.TCP) {
+      ctx = new Context.tcp ("127.0.0.1", 1502);
+      query = GLib.malloc (TcpAttributes.MAX_ADU_LENGTH);
+    } else if (use_backend == Mode.TCP_PI) {
+      ctx = new Context.tcp_pi ("::0", "1502");
+      query = GLib.malloc (TcpAttributes.MAX_ADU_LENGTH);
+    } else {
+      ctx = new Context.rtu ("/dev/ttyUSB0", 115200, 'N', 8, 1);
+      ctx.set_slave (SERVER_ID);
+      query = GLib.malloc (RtuAttributes.MAX_ADU_LENGTH);
+    }
+    header_length = ctx.get_header_length ();
+
+    ctx.set_debug (1);
 
     modbus_mapping = new Mapping (
         UT_BITS_ADDRESS + UT_BITS_NB,
@@ -137,31 +147,33 @@ class UnitTestServer : GLib.Object {
           UT_INPUT_REGISTERS_TAB[i];
     }
 
-    // FIXME: RTU part removed
-    socket = ctx.tcp_listen (1);
-    ctx.tcp_accept (ref socket);
-
-    message ("Connect reached");
-    return_code = ctx.connect ();
-    if (return_code == -1) {
-      error ("Unable to connect %s", Modbus.strerror (errno));
+    if (use_backend == Mode.TCP) {
+        socket = ctx.tcp_listen(1);
+        ctx.tcp_accept(&socket);
+    } else if (use_backend == Mode.TCP_PI) {
+        socket = ctx.tcp_pi_listen(1);
+        ctx.tcp_pi_accept(&socket);
+    } else {
+        return_code = ctx.connect();
+        if (return_code == -1) {
+            stderr.printf("Unable to connect %s\n", Modbus.strerror(errno));
+            return -1;
+        }
     }
 
-    message ("AFTER Connect!");
     for (;;) {
       do {
         return_code = ctx.receive(query);
-        message ("return_code = %d", return_code);
+        /* Filtered queries return 0 */
       } while (return_code == 0);
 
-      /* The connection is not closed on error which requires on reply such as
-         bad CRC in RTU */
+        /* The connection is not closed on errors which require on reply such as
+           bad CRC in RTU. */
       if (return_code == -1 && errno != ModbusError.BADCRC) {
         /* Quit */
         break;
       }
 
-      message ("query[header_length]=%d", query[header_length]);
       /* Special server behavior to test the client */
       if (query[header_length] == 0x03) {
         /* Read holding registers */
@@ -179,30 +191,41 @@ class UnitTestServer : GLib.Object {
           continue;
         } else if (Get.int16_from_int8 (query, header_length + 1)
                    == UT_REGISTERS_ADDRESS_INVALID_TID_OR_SLAVE) {
-          // FIXME: RTU part removed
-          uint8[] raw_req = { 0xFF, 0x03, 0x02, 0x00, 0x00 };
+          const int RAW_REQ_LENGTH = 5;
+          uint8[] raw_req = {
+            (use_backend == Mode.RTU) ? INVALID_SERVER_ID : 0xFF,
+            0x03,
+            0x02, 0x00, 0x00
+          };
 
           stdout.printf("Reply with an invalid TID or slave\n");
-          ctx.send_raw_request(raw_req); //, RAW_REQ_LENGTH);
+          ctx.send_raw_request(raw_req, RAW_REQ_LENGTH * sizeof(uint8));
           continue;
+        } else if (Get.int16_from_int8 (query, header_length +1)
+                   == UT_REGISTERS_ADDRESS_SLEEP_500_MS) {
+          stdout.printf("Sleep 0.5 s before replying\n");
+          Posix.usleep(500000);
         } else if (Get.int16_from_int8 (query, header_length + 1)
-                       == UT_REGISTERS_ADDRESS_BYTE_SLEEP_5_MS) {
-                /* Test low level only available in TCP mode */
-                /* Catch the reply and send reply byte a byte */
-                uint8 req[] = { 0x00, 0x1C, 0x00, 0x00, 0x00, 0x05, 0xFF, 0x03, 0x02, 0x00, 0x00 };
-                int req_length = 11;
-                int w_s = ctx.get_socket();
+                   == UT_REGISTERS_ADDRESS_BYTE_SLEEP_5_MS) {
+          /* Test low level only available in TCP mode */
+          /* Catch the reply and send reply byte a byte */
+          uint8 req[] = {0x00, 0x1C, 0x00, 0x00, 0x00, 0x05, 0xFF, 0x03, 0x02,
+            0x00, 0x00};
 
-                /* Copy TID */
-                req[1] = query[1];
-                for (i=0; i < req_length; i++) {
-                    stdout.printf("(%.2X)", req[i]);
-                    Thread.usleep(5000);
-                    Posix.send (w_s, req, 1, MSG_NOSIGNAL);
-                }
-                continue;
-            }
+          int req_length = 11;
+          int w_s = ctx.get_socket();
+
+          /* Copy TID */
+          req[1] = query[1];
+          for (i=0; i < req_length; i++) {
+            stdout.printf("(%.2X)", req[i]);
+            Posix.usleep(5000);
+            //FIXME: Ugly cast
+            Posix.send(w_s, (void*)(req[i]), 1, MSG_NOSIGNAL);
+          }
+          continue;
         }
+      }
 
         return_code = ctx.reply(query, return_code, modbus_mapping);
         if (return_code == -1) {

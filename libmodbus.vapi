@@ -165,18 +165,18 @@ namespace Modbus {
     public int mask_write_register (int addr, uint16 and_mask, uint16 or_mask);
     public int write_and_read_registers (int write_addr, [CCode (array_length_pos = 1.5)] uint16[] src, int read_addr, [CCode (array_length_pos = 2.5)] uint16[] dest);
     public int report_slave_id ([CCode (array_length = false)] uint8[] dest);
-    public int send_raw_request ([CCode (array_length_pos = 1.5)] uint8[] raw_request);
+    public int send_raw_request ([CCode (array_length_pos = 1.5)] uint8 *raw_request, ulong length);
     // FIXME: test ref parameter to avoid the *
-    public int receive ([CCode (array_length = false)] uint8[] request);
+    public int receive ([CCode (array_length = false)] uint8 *request);
     public int receive_confirmation ([CCode (array_length = false)] uint8 *rsp);
     public int reply ([CCode (array_length_pos = 1.5)] uint8 *req, int index, Mapping mb_mapping);
     public int reply_exception ([CCode (array_length = false)] uint8 *req, uint exception_code);
 
     public int tcp_listen(int nb_connection);
-    public int tcp_accept(ref int socket);
+    public int tcp_accept(int *socket);
 
     public int tcp_pi_listen(int nb_connection);
-    public int tcp_pi_accept(ref int socket);
+    public int tcp_pi_accept(int *socket);
 
 
     public int rtu_set_serial_mode (int mode);
