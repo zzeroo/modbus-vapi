@@ -221,7 +221,7 @@ class UnitTestServer : GLib.Object {
             stdout.printf("(%.2X)", req[i]);
             Posix.usleep(5000);
             //FIXME: Ugly cast
-            Posix.send(w_s, (void*)(req[i]), 1, MSG_NOSIGNAL);
+            Posix.send(w_s, (uint8*)(req)+i, 1, MSG_NOSIGNAL);
           }
           continue;
         }
