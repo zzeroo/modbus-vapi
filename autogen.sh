@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+set -e # exit on errors
 
 test -n "$srcdir" || srcdir=`dirname "$0"`
 test -n "$srcdir" || srcdir=.
@@ -16,5 +16,5 @@ autoreconf --force --install
 cd "$olddir"
 
 if test -z "$NOCONFIGURE"; then
-  "$srcdir"/configure "$@"
+  "$srcdir"/configure --enable-maintainer-mode --enable-debug  "$@"
 fi

@@ -1,6 +1,8 @@
 VALAFLAGS =\
 					 --vapidir ../ \
-					 $(VALA_PACKAGES)
+					 $(VALA_PACKAGES) \
+					 $(VALA_DEBUG_FLAGS) \
+					 $(NULL)
 
 unit_test_server_CPPFLAGS = \
 													$(LIBMODBUS_CFLAGS)

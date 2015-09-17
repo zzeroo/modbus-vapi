@@ -4,14 +4,12 @@ AC_INIT([modbus-vapi],
         [modbus-vapi],
         [https://github.com/zzeroo/modbus-vapi])
 AM_INIT_AUTOMAKE([foreign dist-xz])
-#AM_INIT_AUTOMAKE([subdir-objects])
+AM_MAINTAINER_MODE([enable])
 
 AC_PROG_CC
 AM_PROG_VALAC([0.28])
 
-dnl ###########################################################################
 dnl Dependencies
-dnl ###########################################################################
 GLIB_REQUIRED=2.12.0
 LIBMODBUS_REQUIRED=3.1.2
 
@@ -26,6 +24,17 @@ AC_SUBST(VALA_PACKAGES)
 
 AC_CONFIG_FILES([Makefile
                  tests/Makefile])
+
+dnl Debugging
+AC_ARG_ENABLE(debug,
+	AS_HELP_STRING([--enable-debug],[enable debugging]),,
+        enable_debug=no)
+if test "x$enable_debug" = "xyes"; then
+        CFLAGS="$CFLAGS -O0 -ggdb3"
+        VALA_DEBUG_FLAGS="-g"
+fi
+
+AC_SUBST(VALA_DEBUG_FLAGS)
 
 AC_OUTPUT
 
