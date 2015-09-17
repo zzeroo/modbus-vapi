@@ -10,7 +10,7 @@ AM_CPPFLAGS = \
 LDADD = \
 													$(LIBMODBUS_LIBS)
 
-noninst_PROGRAMS = \
+noinst_PROGRAMS = \
 							 unit-test-server \
 							 unit-test-client
 
