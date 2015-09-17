@@ -148,8 +148,8 @@ namespace Modbus {
     public int set_error_recovery (ErrorRecovery error_recovery);
     public int set_socket (int socket);
     public int get_socket ();
-    public int get_response_timeout (Posix.timeval *timeout);
-    public int set_response_timeout (Posix.timeval *timeout);
+    public int get_response_timeout (uint32 *to_sec, uint32 *to_usec);
+    public int set_response_timeout (uint32 to_sec, uint32 to_usec);
     public int get_byte_timeout (Posix.timeval *timeout);
     public int set_byte_timeout (Posix.timeval *timeout);
     public int get_header_length ();
