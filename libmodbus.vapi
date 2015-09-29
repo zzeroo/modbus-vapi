@@ -10,14 +10,14 @@ namespace Modbus {
     HEX
   }
 
-  [CCode (cheader_filename = "modbus.h")]
-  public const int FALSE;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int TRUE;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int ON;
-  [CCode (cheader_filename = "modbus.h")]
-  public const int OFF;
+  // FIXME: How?
+ //  public const int FALSE = 0;
+ //  [CCode (cheader_filename = "modbus.h")]
+ //  public const int TRUE = 1;
+ //  [CCode (cheader_filename = "modbus.h")]
+ //  public const int ON = 1;
+ //  [CCode (cheader_filename = "modbus.h")]
+ //  public const int OFF = 0;
 
   [CCode (cname = "unsigned int", cprefix = "MODBUS_FC_", cheader_filename = "modbus.h", has_type_id = false)]
   public enum FunctionCode {
@@ -35,8 +35,21 @@ namespace Modbus {
     WRITE_AND_READ_REGISTERS
   }
 
-  [CCode (cheader_filename = "modbus.h")]
-  public const int MODBUS_BROADCAST_ADDRESS;
+  [CCode (cname = "TRUE")]
+  public const int TRUE;
+  [CCode (cname = "FALSE")]
+  public const int FALSE;
+  [CCode (cname = "ON")]
+  public const int ON;
+  [CCode (cname = "OFF")]
+  public const int OFF;
+
+  [CCode (cprefix = "MODBUS_BROADCAST_ADDRESS", cheader_filename = "modbus.h")]
+  public const int BROADCAST_ADDRESS;
+
+  [CCode (cprefix = "MODBUS_TCP_SLAVE", cheader_filename = "modbus.h")]
+  public const int TCP_SLAVE;
+
 
   [CCode (cname = "unsigned int", cprefix = "MODBUS_MAX_", cheader_filename = "modbus.h", has_type_id = false)]
   public enum Max {
@@ -69,26 +82,41 @@ namespace Modbus {
     MAX
   }
 
-  [CCode (cprefix = "EMB", cheader_filename = "modbus.h", has_type_id = false)]
-  public enum ModbusError {
-    XILFUN,
-    XILADD,
-    XILVAL,
-    XSFAIL,
-    XACK,
-    XSBUSY,
-    XNACK,
-    XMEMPAR,
-    XGPATH,
-    XGTAR,
+  [CCode (cname = "EMBXILFUN")]
+  public const int EMBXILFUN;
+  [CCode (cname = "EMBXILADD")]
+  public const int EMBXILADD;
+  [CCode (cname = "EMBXILVAL")]
+  public const int EMBXILVAL;
+  [CCode (cname = "EMBXSFAIL")]
+  public const int EMBXSFAIL;
+  [CCode (cname = "EMBXACK")]
+  public const int EMBXACK;
+  [CCode (cname = "EMBXSBUSY")]
+  public const int EMBXSBUSY;
+  [CCode (cname = "EMBXNACK")]
+  public const int EMBXNACK;
+  [CCode (cname = "EMBXMEMPAR")]
+  public const int EMBXMEMPAR;
+  [CCode (cname = "EMBXGPATH")]
+  public const int EMBXGPATH;
+  [CCode (cname = "EMBXGTAR")]
+  public const int EMBXGTAR;
 
-    BADCRC,
-    BADDATA,
-    BADEXC,
-    UNKEXC,
-    MDATA,
-    BADSLAVE
-  }
+  /* Native libmodbus error codes */
+  [CCode (cname = "EMBBADCRC")]
+  public const int EMBBADCRC;
+  [CCode (cname = "EMBBADDATA")]
+  public const int EMBBADDATA;
+  [CCode (cname = "EMBBADEXC")]
+  public const int EMBBADEXC;
+  [CCode (cname = "EMBUNKEXC")]
+  public const int EMBUNKEXC;
+  [CCode (cname = "EMBMDATA")]
+  public const int EMBMDATA;
+  [CCode (cname = "EMBBADSLAVE")]
+  public const int EMBBADSLAVE;
+
   [CCode (cheader_filename = "modbus.h")]
   public extern const int libmodbus_version_major;
   [CCode (cheader_filename = "modbus.h")]
@@ -131,13 +159,13 @@ namespace Modbus {
   [Compact]
   public class Context {
     [CCode (cname = "modbus_new_rtu")]
-    public Context.rtu (string device, int baud, char parity, int data_bit, int stop_bit);
+    public Context.rtu (string? device, int baud, char parity, int data_bit, int stop_bit);
 
     [CCode (cname = "modbus_new_tcp")]
     public Context.tcp (string ip_address, int port);
 
     [CCode (cname = "modbus_new_tcp_pi")]
-    public Context.tcp_pi (string node, string service);
+    public Context.tcp_pi (string? node, string? service);
 
 
     public void close ();
@@ -150,21 +178,23 @@ namespace Modbus {
     public int get_socket ();
     public int get_response_timeout (uint32 *to_sec, uint32 *to_usec);
     public int set_response_timeout (uint32 to_sec, uint32 to_usec);
-    public int get_byte_timeout (Posix.timeval *timeout);
-    public int set_byte_timeout (Posix.timeval *timeout);
+    public int get_byte_timeout (uint32 *to_sec, uint32 *to_usec);
+    public int set_byte_timeout (uint32 to_sec, uint32 to_usec);
     public int get_header_length ();
     public int set_debug (int flag);
-    public int read_bits (int addr, [CCode (array_length_pos = 1.5)] uint8[] dest);
-    public int read_input_bits (int addr, [CCode (array_length_pos = 1.5)] uint8[] dest);
-    public int read_registers (int addr, [CCode (array_length_pos = 1.5)] uint16[] dest);
-    public int read_input_registers (int addr, [CCode (array_length_pos = 1.5)] uint16[] dest);
+    public int read_bits (int addr, int length, [CCode (array_length = false)] uint8 *dest);
+    public int read_input_bits (int addr, int num_bits, [CCode (array_length = false)] uint8 *dest);
+    public int read_registers (int addr, int num_bits, [CCode (array_length_pos = 1.5)] uint16 *dest);
+    public int read_input_registers (int addr, int num_bits, [CCode (array_length = false)] uint16 *dest);
     public int write_bit (int coil_addr, int status);
     public int write_register (int reg_addr, int value);
-    public int write_bits (int addr, [CCode (array_length_pos = 1.5)] uint8[] data);
-    public int write_registers (int addr, [CCode (array_length_pos = 1.5)] uint16[] data);
+    public int write_bits (int addr, int num_bits, [CCode (array_length = false)] uint8 *data);
+    public int write_registers (int addr, int num_bits, [CCode (array_length = false)] uint16 *data);
     public int mask_write_register (int addr, uint16 and_mask, uint16 or_mask);
-    public int write_and_read_registers (int write_addr, [CCode (array_length_pos = 1.5)] uint16[] src, int read_addr, [CCode (array_length_pos = 2.5)] uint16[] dest);
-    public int report_slave_id ([CCode (array_length = false)] uint8[] dest);
+    public int write_and_read_registers (int write_addr, int write_num_bits,
+                                         uint16 *src, int read_addr, int num_bits,
+                                         uint16 *dest);
+    public int report_slave_id (int max_dest, uint8 *dest);
     public int send_raw_request ([CCode (array_length_pos = 1.5)] uint8 *raw_request, ulong length);
     // FIXME: test ref parameter to avoid the *
     public int receive ([CCode (array_length = false)] uint8 *request);
@@ -227,27 +257,21 @@ namespace Modbus {
     public int16 int64_to_int16 (int64[] tab);
   }
 
-  public static void set_bits_from_byte ([CCode (array_length = false)]  uint8 dest[], int idx, uint8 value);
-  public static void set_bits_from_bytes ([CCode (array_length = false)] uint8 dest[], int idx, int nb_bits, [CCode (array_length = false)] uint8[] tab_byte);
+  public static void set_bits_from_byte ([CCode (array_length = false)]  uint8 dest[], int index, uint8 value);
+  public static void set_bits_from_bytes ([CCode (array_length = false)] uint8 dest[], int index, int num_bits, [CCode (array_length = false)] uint8[] tab_byte);
 
-  public static uint8 get_byte_from_bits ([CCode (array_length_pos = 2.5)] uint8[] src, int idx);
-  public static float get_float ([CCode (array_length = false)] uint16[] src);
-  public static float get_float_dcba ([CCode (array_length = false)] uint16[] src);
-  public static void set_float (float f,[CCode (array_length = false)]  uint16[] dest);
-  public static void set_float_dcba (float f,[CCode (array_length = false)]  uint16[] dest);
+  public static uint8 get_byte_from_bits ([CCode (array_length_pos = 2.5)] uint8 *src, int num_bits, int index);
+  public static float get_float ([CCode (array_length = false)] uint16 *src);
+  public static float get_float_dcba ([CCode (array_length = false)] uint16 *src);
+  public static void set_float (float f, [CCode (array_length = false)]  uint16 *dest);
+  public static void set_float_dcba (float f, [CCode (array_length = false)]  uint16 *dest);
 
   public static unowned string strerror (int errnum);
 
 
-  [CCode (cprefix = "MODBUS_RTU_", cheader_filename = "modbus-rtu.h")]
-  public enum RtuAttributes {
-    MAX_ADU_LENGTH,
-    RS232,
-    RS485,
-    RTS_NONE,
-    RTS_UP,
-    RTS_DOWN
-  }
+  [CCode (cprefix = "MODBUS_RTU_MAX_ADU_LENGTH", cheader_filename = "modbus-rtu.h")]
+  public const int RTU_MAX_ADU_LENGTH;
+
 
   [CCode (cprefix = "MODBUS_TCP_", cheader_filename = "modbus-tcp.h")]
   public enum TcpAttributes {
@@ -255,5 +279,8 @@ namespace Modbus {
     MAX_ADU_LENGTH,
     SLAVE
   }
+
+
+
 
 }

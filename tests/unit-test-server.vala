@@ -99,7 +99,7 @@ class UnitTestServer : GLib.Object {
     } else {
       ctx = new Context.rtu ("/dev/ttyUSB0", 115200, 'N', 8, 1);
       ctx.set_slave (SERVER_ID);
-      query = GLib.malloc (RtuAttributes.MAX_ADU_LENGTH);
+      query = GLib.malloc (RTU_MAX_ADU_LENGTH);
     }
     header_length = ctx.get_header_length ();
 
@@ -169,7 +169,7 @@ class UnitTestServer : GLib.Object {
 
         /* The connection is not closed on errors which require on reply such as
            bad CRC in RTU. */
-      if (return_code == -1 && errno != ModbusError.BADCRC) {
+      if (return_code == -1 && errno != EMBBADCRC) {
         /* Quit */
         break;
       }

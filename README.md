@@ -19,6 +19,23 @@ The Vala langeuage:
 For bug reports, or enhancement requests:
     <https://github.com/geoffjay/modbus-vapi/issues>
 
+
+Dependencies
+-----------
+
+You need the `valac` compiler, of course. On debian/ ubuntu do something like this:
+
+    sudo apt-get install valac
+
+Then you need libmodbus, I prefer installing from source:
+
+    git clone https://github.com/stephane/libmodbus.git
+    cd libmodbus
+    ./autogen.sh
+    ./configure --prefix=/usr
+    make
+    sudo make install
+
 Usage
 -----
 
