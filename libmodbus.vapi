@@ -181,7 +181,7 @@ namespace Modbus {
     public int get_byte_timeout (uint32 *to_sec, uint32 *to_usec);
     public int set_byte_timeout (uint32 to_sec, uint32 to_usec);
     public int get_header_length ();
-    public int set_debug (int flag);
+    public int set_debug (bool flag);
     public int read_bits (int addr, int length, [CCode (array_length = false)] uint8 *dest);
     public int read_input_bits (int addr, int num_bits, [CCode (array_length = false)] uint8 *dest);
     public int read_registers (int addr, int num_bits, [CCode (array_length_pos = 1.5)] uint16 *dest);
