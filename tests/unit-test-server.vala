@@ -103,7 +103,7 @@ class UnitTestServer : GLib.Object {
     }
     header_length = ctx.get_header_length ();
 
-    ctx.set_debug (1);
+    ctx.set_debug (true);
 
     modbus_mapping = new Mapping (
         UT_BITS_ADDRESS + UT_BITS_NB,

@@ -165,7 +165,7 @@ class UnitTestClient : GLib.Object {
       stderr.printf("Unable to allocate libmodbus context\n");
       return -1;
     }
-    ctx.set_debug (1);
+    ctx.set_debug (true);
     ctx.set_error_recovery( ErrorRecovery.LINK |
                            ErrorRecovery.PROTOCOL);
 
