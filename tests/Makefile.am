@@ -25,3 +25,5 @@ CLEANFILES = *~ *.log
 noinst_SCRIPTS=unit-tests.sh
 TESTS=./unit-tests.sh
 
+
+-include $(top_srcdir)/git.mk
